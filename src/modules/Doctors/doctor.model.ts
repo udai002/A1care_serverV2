@@ -15,32 +15,34 @@ export interface DoctorDocument extends Document {
   completed: number; 
   roleId:mongoose.Types.ObjectId;
   documentId?:mongoose.Types.ObjectId;
-  fulfillmentMode:"HOME_VISIT" |  "HOSPITAL_VISIT"| "VIRTUAL"
+  fulfillmentMode:"HOME_VISIT" |  "HOSPITAL_VISIT"| "VIRTUAL" , 
+  isRegistered:boolean
+  
 }
 
 const DoctorSchema = new Schema<DoctorDocument>(
   {
     name: {
       type: String,
-      required: true,
+      // required: true,
       trim: true
     },
 
     gender: {
       type: String,
       enum: ["Male", "Female", "Other"],
-      required: true
+      // required: true
     },
 
     startExperience: {
       type: Date,
-      required: true,
+      // required: true,
       min: 0
     },
 
     specialization: {
       type: [String],
-      required: true
+      // required: true
     },
 
     status: {
@@ -51,19 +53,19 @@ const DoctorSchema = new Schema<DoctorDocument>(
 
     consultationFee: {
       type: Number,
-      required: true,
+      // required: true,
       min: 0
     },
 
     about: {
       type: String,
-      required: true,
+      // required: true,
       trim: true
     },
 
     workingHours: {
       type: String, // e.g. "09:00 - 17:00"
-      required: true
+      // required: true
     },
 
     doctorDetailsId: {
@@ -96,6 +98,10 @@ const DoctorSchema = new Schema<DoctorDocument>(
       type:Schema.Types.ObjectId , 
       ref:"Role" ,    
   },
+  isRegistered:{
+    type:Boolean , 
+    default:false
+  }
 },
 
   {
