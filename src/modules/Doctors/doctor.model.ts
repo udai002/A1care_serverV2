@@ -98,6 +98,11 @@ const DoctorSchema = new Schema<DoctorDocument>(
       type:Schema.Types.ObjectId , 
       ref:"Role" ,    
   },
+  mobileNumber:{
+    type:String , 
+    required:true ,
+    unique:true
+  },
   isRegistered:{
     type:Boolean , 
     default:false

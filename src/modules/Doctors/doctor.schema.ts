@@ -8,9 +8,8 @@ const doctorValidation = z.object({
     consultationFee:z.number() , 
     about:z.string(), 
     workingHours:z.string() , 
-    completed:z.number() , 
     roleId:z.string(), 
-    mobileNumber:z.string()
+    // mobileNumber:z.string()
 }) 
 
 export default doctorValidation
