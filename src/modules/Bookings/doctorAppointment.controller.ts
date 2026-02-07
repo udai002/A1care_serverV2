@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { ApiError } from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import asyncHandler from "../../utils/asyncHandler.js";
@@ -27,7 +28,13 @@ export const createDoctorAppointment = asyncHandler(async (req , res)=>{
 })
 
 // get appointments by doctor id
-
+export const getPendingAppointmentbyProviderId = asyncHandler(async (req ,res)=>{
+    const providerId = req.user?.id;
+    const {status} = req.query
+    if(!providerId)throw new ApiError(401 , "Provider id not found");
+    const pendingAppointments = await doctorAppointmentModel.find({doctorId:new mongoose.Types.ObjectId(providerId) , status:{$in:["Pending" , "Confirmed"  ]}})
+    return res.json(new ApiResponse(200 , "fetch appointment details",pendingAppointments ))
+})
 
 //get appointment by patient id 
 export const getAppointmentsByPatientId = asyncHandler(async (req , res)=>{

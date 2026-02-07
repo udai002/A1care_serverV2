@@ -9,7 +9,8 @@ import serviceRequestModel from "./serviceRequest.model.js";
 export const  createServiceAcceptance = asyncHandler(async (req , res)=>{
     // plan the data for acceptance okay...
     // start from here 
-    const {serviceRequestId , providerId}= req.params 
+    const providerId =  req.user?.id;
+    const {serviceRequestId}= req.params 
     const payload = {
         ...req.body , 
         serviceRequestId , 
@@ -34,6 +35,29 @@ export const  createServiceAcceptance = asyncHandler(async (req , res)=>{
     }else{
         throw new ApiError(404 , "Service Request not found")
     }
+})
+
+export const createServiceRejected = asyncHandler(async (req ,res)=>{
+    const providerId = req.user?.id
+    const {requestId} = req.params 
+
+    if(!requestId) throw new ApiError(401 , "Request id not found");
+    const payload = {
+        ...req.body , 
+        providerId ,
+        serviceRequestId:requestId , 
+        status:"REJECTED"
+    }
+
+    const  parsed = serviceAcceptanceValidation.safeParse(payload)
+    if(!parsed.success){
+        console.log("Error in validation:", parsed.error)
+        throw new ApiError(401 , "Error in validations!")
+    }
+
+    const createRejected = new serviceAcceptanceModal(parsed.data)
+    await createRejected.save()
+    return res.status(201).json(new ApiResponse(201 , "Rejected the request", createRejected))
 })
 
 //service acceptance by service request id 

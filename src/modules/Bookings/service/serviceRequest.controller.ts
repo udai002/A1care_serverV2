@@ -5,6 +5,7 @@ import asyncHandler from "../../../utils/asyncHandler.js";
 import serviceRequestModel from "./serviceRequest.model.js";
 import serviceRequestValiation from "./serviceRequest.schema.js";
 import { log } from "console";
+import { ChildServiceModel } from "../../Services/childService.model.js";
 
 export const createServiceRequest = asyncHandler(async (req, res) => {
     const userId = req.user?.id
@@ -12,9 +13,7 @@ export const createServiceRequest = asyncHandler(async (req, res) => {
         ...req.body,
         userId,
     }
-
     const  checkServiceRequest = await serviceRequestModel.find({userId:new mongoose.Types.ObjectId(userId)})
-
     if(checkServiceRequest.length>2){
         throw new ApiError(401 , "To many service requests")
     }
@@ -28,9 +27,7 @@ export const createServiceRequest = asyncHandler(async (req, res) => {
     await newServiceRequest.save()
 
     const serviceRequest = await serviceRequestModel.findById(newServiceRequest._id).populate("childServiceId")
-
     // socket and redis update for realtime updating
-
     return res.status(201).json(new ApiResponse(201, "Service booked", serviceRequest))
 })
 
@@ -68,10 +65,36 @@ export const getPendingRequest = asyncHandler(async (req, res) => {
 
 export const getSerivceRequestById = asyncHandler(async (req  ,res)=>{
     const {requestId} = req.params
-    
+    const {status} =req.query
     if(!requestId) throw new ApiError(401 , "Please Provide request Id" )
     const requestDetails = await serviceRequestModel.findOne({_id:new mongoose.Types.ObjectId(requestId)})
     if(!requestDetails) throw new ApiError(404 , "Service request not found")
     
     return res.status(200).json(new ApiResponse(200 , "Request Found", requestDetails))
 })
+
+export const getServiceRequestForProvider = asyncHandler(async (req , res)=>{
+    const {roleId} = req.params
+    const providerId = req.user?.id
+    const {status} = req.query
+    if(!roleId) throw new ApiError(401 , 'No role id found');
+    
+    console.log("execution is here" , providerId , status)
+    // socket and redis logic\
+    const childService = await ChildServiceModel.find({allowedRoleIds:roleId})
+    let requests = []
+    if(providerId && status!=="PENDING"){
+        requests = await serviceRequestModel.find({childServiceId:{$in:childService.map(item=>[item._id])} , status}).populate("childServiceId").populate("userId")
+   
+    }else{
+        requests = await serviceRequestModel.find({childServiceId:{$in:childService.map(item=>[item._id])} , status:"PENDING"}).populate("childServiceId").populate("userId")
+    }
+   
+
+    return res.status(200).json(new ApiResponse(200 , "Fetched requests", requests ))
+})
+
+
+//slots
+//earings
+//bookings

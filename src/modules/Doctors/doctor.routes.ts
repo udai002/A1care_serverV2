@@ -18,11 +18,11 @@ router.get('/:doctorId' , getDoctorById)
 
 
 //create doctor slot 
-router.post('/slot/create/:doctorId' , createDoctorAvailability)
+router.post('/slot/create/' ,protect , createDoctorAvailability)
 router.post('/slot/block/:doctorId' , blockTiming)
 
 //available slots
-router.get('/slots/:doctorId/:date' , availableSlotByDoctorId)
+router.get('/slots/:date' ,protect , availableSlotByDoctorId)
 router.get('/staff/role/' , getStaffByRoleId)
 
 export default router

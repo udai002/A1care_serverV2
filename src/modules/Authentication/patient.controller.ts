@@ -7,6 +7,7 @@ import { patientValidation } from "./patient.schema.js";
 import mongoose from 'mongoose';
 import RedisClient from '../../configs/redisConnect.js';
 import generateOtp from '../../utils/generateOtp.js';
+import sendMessage from '../../configs/twilioConfig.js';
 
 export const getPatientDetailsById = asyncHandler(async(req ,res)=>{
     const patientId = req.user?.id
@@ -28,6 +29,7 @@ export const sentOtpForPatient = asyncHandler(async (req , res)=>{
     // rate limiting and otp logic
     //random otp
     const otp = generateOtp()
+    await sendMessage(mobileNumber , otp);
     RedisClient.setEx(`otp:${mobileNumber}` , 300 , JSON.stringify(otp))
 
     return res.json(new ApiResponse(201 , "OTP sent successfully" , {mobileNumber}))

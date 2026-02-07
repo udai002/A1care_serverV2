@@ -8,6 +8,7 @@ import doctorValidation from "./doctor.schema.js";
 import jwt from 'jsonwebtoken'
 import { v1 as uuidv4 } from "uuid";
 import { hmacHash } from "../../utils/Hmac.js";
+import sendMessage from "../../configs/twilioConfig.js";
 
 //create doctor 
 export const createDoctor = asyncHandler(async (req , res)=>{
@@ -59,7 +60,7 @@ export const sendOtpForStaff = asyncHandler(async (req, res) => {
   const otp = generateOtp();
   const otpHash = hmacHash(otp.toString());
   const mobileHash = hmacHash(normalizedMobile);
-
+  await sendMessage(mobileNumber , otp)
   const otpSessionId = uuidv4();
   await RedisClient.setEx(
     `otp:${otpSessionId}`,
@@ -170,7 +171,11 @@ export const checkOtpStatus = asyncHandler(async (req ,res)=>{
 // register controller 
 export const registerStaff = asyncHandler(async (req , res)=>{
   const parsed = doctorValidation.safeParse(req.body)
+  console.log("this is the parese data" , parsed)
   const staffId = req.user?.id
+
+
+  if(!parsed.success) throw new ApiError(401 , "Validation failed!");
 
   const findStaff = await doctorModel.findById(staffId)
   if(!findStaff) throw new ApiError(404 , "Staff not found" );

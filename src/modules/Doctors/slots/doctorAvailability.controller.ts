@@ -9,13 +9,14 @@ import doctorAvailabilityValidation from "./doctorAvailable.schema.js";
 import mongoose from "mongoose";
 
 export const createDoctorAvailability = asyncHandler(async (req , res)=>{
-    const {doctorId} = req.params // for testing we are taking doctor id from params afther authentication it should come from middleware
+    const doctorId = req.user?.id// for testing we are taking doctor id from params afther authentication it should come from middleware
     const payload = {
         ...req.body  , 
         doctorId
     }
 
     const parsed = doctorAvailabilityValidation.safeParse(payload)
+    console.log(parsed.error)
     if(!parsed.success){
         throw new ApiError(401 , "Validation failed")
     }
@@ -56,8 +57,9 @@ export const blockTiming = asyncHandler(async (req , res)=>{
 
 //Available slots for doctor
 export const availableSlotByDoctorId = asyncHandler(async (req, res) => {
-  const { doctorId, date } = req.params;
-
+  const doctorId = req.user?.id
+  const { date } = req.params;
+  console.log(date , doctorId)
   if (!doctorId || !date) {
     throw new ApiError(400, "Missing doctorId or date");
   }
@@ -79,7 +81,7 @@ export const availableSlotByDoctorId = asyncHandler(async (req, res) => {
   });
 
   if (!checkingSlot) {
-    throw new ApiError(404, "Doctor not Available right now...");
+    return res.status(200).json(new ApiResponse(200 , "Create availablility..." ,  checkingSlot));
   }
 
   const { startingTime, endingTime, slotDuration } = checkingSlot as any;
